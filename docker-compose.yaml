@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: "postgres:14.12"
+    environment:
+      - POSTGRES_DB=airlinedb_booking
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=myuser
+    ports:
+      - '5432:5432'

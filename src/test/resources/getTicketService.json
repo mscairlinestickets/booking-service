@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/api/flights/checkDetails/"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "flightNumber": "TK1933",
+      "origin": "GRU",
+      "destination": "LIS",
+      "departureDateTime": "2025-08-12T18:30:00",
+      "totalSeats": 200,
+      "availableSeats": 58,
+      "price": 1199.99,
+      "icaoCode": "TAP",
+      "model": "A320neo"
+    },
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
