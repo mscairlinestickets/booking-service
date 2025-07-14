@@ -1,20 +1,21 @@
 {
   "request": {
-    "method": "GET",
-    "url": "/api/flights/checkDetails/"
+    "method": "POST",
+    "url": "/api/flights/TK1933/3"
   },
   "response": {
     "status": 200,
-    "body": {
+    "body":   {
       "flightNumber": "TK1933",
       "origin": "GRU",
-      "destination": "LIS",
+      "destination": "JFK",
       "departureDateTime": "2025-08-12T18:30:00",
-      "totalSeats": 200,
-      "availableSeats": 58,
-      "price": 1199.99,
-      "icaoCode": "TAP",
-      "model": "A320neo"
+      "price": 1200.50,
+      "quantity": 3,
+      "airlineName": "Latam Airlines",
+      "status": "PENDING",
+      "icaoCode": "LAT",
+      "aircraftModel": "Boeing 787"
     },
     "headers": {
       "Content-Type": "application/json"

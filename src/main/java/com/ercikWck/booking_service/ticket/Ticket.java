@@ -19,14 +19,10 @@ public record Ticket(
 
         String airlineName,
 
-        BookingStatus status,
-
         String icaoCode,
 
         String aircraftModel
-        //marvel
-        //ellis
-        //yaml
+
 ) {
 
 }

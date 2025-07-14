@@ -5,12 +5,13 @@ import com.ercikWck.booking_service.ticket.TicketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.QueryTimeoutException;
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 @Service
 public class BookingService {
@@ -30,6 +31,7 @@ public class BookingService {
         this.reactiveKafka = reactiveKafka;
     }
 
+    @Transactional(transactionManager = "connectionFactoryTransactionManager")
     public Mono<Booking> submitOrder(String flightNumber, Integer quantity, CardDtoTransaction card) {
 
         return ticketClient.getBookingFlight(flightNumber, quantity)
@@ -45,8 +47,8 @@ public class BookingService {
         return Booking.createBooking(booking, quantity, BookingStatus.PENDING);
     }
 
-    public Booking buildRejectBookingOrder(String booking, int quantity) {
-        return Booking.createRejectedBooking(booking, quantity);
+    public Booking buildRejectBookingOrder(String flightNumber, int quantity) {
+        return Booking.createRejectedBooking(flightNumber, quantity);
     }
 
     public Booking buildBookingApproved(Booking existBooking) {
@@ -55,9 +57,9 @@ public class BookingService {
                 .build();
     }
 
-    @Retryable(retryFor = QueryTimeoutException.class, maxAttempts = 5, backoff = @Backoff(delay = 100, multiplier = 1.1))
     public Mono<Void> publishBookingAcceptedEventToKafka(Long bookingId, CardDtoTransaction cardTransaction) {
         return reactiveKafka.send(topic, bookingId, cardTransaction)
+                .retryWhen(Retry.backoff(5, Duration.ofMillis(100)).maxBackoff(Duration.ofSeconds(2)))
                 .doOnSuccess(voidSenderResult -> log.info("Enviando ao Kafka: {}", voidSenderResult))
                 .doOnError(error -> log.error("Erro ao enviar mensagem par ao kafka", error))
                 .doOnSuccess(result -> log.info("Transação enviada com sucesso: {}", cardTransaction))

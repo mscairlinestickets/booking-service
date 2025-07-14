@@ -18,7 +18,6 @@ public class ReactiveKafkaProducerConfig {
     public ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafkaProducerTemplate(final KafkaProperties properties){
         Map<String, Object> props = properties.buildProducerProperties();
         return new ReactiveKafkaProducerTemplate<Long, CardDtoTransaction>(SenderOptions.create(props));
-
     }
 
 

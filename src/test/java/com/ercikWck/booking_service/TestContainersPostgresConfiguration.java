@@ -10,13 +10,16 @@ import org.testcontainers.utility.DockerImageName;
 
 @Import(ConfigAuditData.class)
 @TestConfiguration(proxyBeanMethods = false)
-class TestcontainersConfiguration {
+public class TestContainersPostgresConfiguration {
 
+    @Bean
+    @ServiceConnection
+    PostgreSQLContainer<?> postgresContainer() {
+        return new PostgreSQLContainer<>(DockerImageName.parse("postgres:14.12"))
+                .withDatabaseName("airlinedb_booking")
+                .withUsername("user")
+                .withPassword("password");
+    }
 
-	@Bean
-	@ServiceConnection
-	PostgreSQLContainer<?> postgresContainer() {
-		return new PostgreSQLContainer<>(DockerImageName.parse("postgres:latest"));
-	}
 
 }

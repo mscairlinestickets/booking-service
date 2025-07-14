@@ -1,71 +1,97 @@
+package com.ercikWck.booking_service.integration;
+
+import com.ercikWck.booking_service.TestContainerKafkaConfig;
+import com.ercikWck.booking_service.TestContainersPostgresConfiguration;
 import com.ercikWck.booking_service.domain.BookingService;
 import com.ercikWck.booking_service.domain.CardDtoTransaction;
-import com.ercikWck.booking_service.repository.BookingRepository;
-import com.ercikWck.booking_service.ticket.TicketClient;
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.kafka.common.serialization.LongDeserializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.kafka.KafkaContainer;
-import org.testcontainers.utility.DockerImageName;
 import reactor.core.publisher.Mono;
-import reactor.kafka.sender.SenderOptions;
+import reactor.kafka.receiver.KafkaReceiver;
+import reactor.kafka.receiver.ReceiverOptions;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.mockito.Mockito.mock;
-
+@ActiveProfiles("integration")
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class bookingServiceIntegrationTest {
-
-    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.0"));
-
-    @DynamicPropertySource
-    static void setupProps(DynamicPropertyRegistry registry) {
-        kafka.start();
-        registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
-        registry.add("message.topic", () -> "test-topic");
-    }
+@Import({TestContainerKafkaConfig.class, TestContainersPostgresConfiguration.class})
+public class BookingServiceIntegrationTest {
 
     @Value("${message.topic}")
     private String topic;
 
     @Autowired
-    private KafkaProperties kafkaProperties; // ✅ injeta como campo
-
     private BookingService bookingService;
 
-    @BeforeEach
-    void setup() {
-        Map<String, Object> props = kafkaProperties.buildProducerProperties();
-
-        props.put("key.serializer", "org.apache.kafka.common.serialization.LongSerializer");
-        props.put("value.serializer", "org.springframework.kafka.support.serializer.JsonSerializer");
-
-        SenderOptions<Long, CardDtoTransaction> senderOptions = SenderOptions.create(props);
-        ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafkaProducer =
-                new ReactiveKafkaProducerTemplate<>(senderOptions);
-
-        var mockRepository = mock(BookingRepository.class);
-        var mockTicketClient = mock(TicketClient.class);
-
-        bookingService = new BookingService(mockTicketClient, mockRepository, reactiveKafkaProducer);
-    }
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
     @Test
     void deveEnviarMensagemParaKafkaComSucesso() {
         Long bookingId = 123L;
-        CardDtoTransaction card = CardDtoTransaction.builder()
+        CardDtoTransaction card = buildCard();
+
+        Mono<Void> resultado = bookingService.publishBookingAcceptedEventToKafka(bookingId, card);
+
+        StepVerifier.create(resultado)
+                .verifyComplete();
+        verificarMensagemRecebida(bookingId, card);
+    }
+
+
+    // Cria o KafkaReceiver configurado para consumir do tópico
+    private KafkaReceiver<Long, CardDtoTransaction> criarKafkaReceiver() {
+        Map<String, Object> props = new HashMap<>();
+        props.put("bootstrap.servers", bootstrapServers);
+        props.put("key.deserializer", LongDeserializer.class.getName());
+        props.put("value.deserializer", JsonDeserializer.class.getName());
+        props.put("spring.json.trusted.packages", "*");
+        props.put("group.id", UUID.randomUUID().toString());
+        props.put("auto.offset.reset", "earliest");
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CardDtoTransaction.class.getName());
+
+        ReceiverOptions<Long, CardDtoTransaction> receiverOptions = ReceiverOptions.<Long, CardDtoTransaction>create(props)
+                .subscription(Collections.singleton(topic));
+
+        return KafkaReceiver.create(receiverOptions);
+    }
+
+    // Verifica se o Kafka recebeu e leu a mensagem corretamente
+    private void verificarMensagemRecebida(Long bookingId, CardDtoTransaction esperado) {
+        KafkaReceiver<Long, CardDtoTransaction> kafkaReceiver = criarKafkaReceiver();
+
+        StepVerifier.create(
+                        kafkaReceiver.receive()
+                                .map(record -> record.value())
+                                .filter(recebido -> recebido.paymentId().equals(esperado.paymentId()))
+                                .take(1)
+                )
+                .expectNextMatches(recebido ->
+                        recebido.amount().compareTo(esperado.amount()) == 0 &&
+                                recebido.cardholderName().equals(esperado.cardholderName())
+                )
+                .expectComplete()
+                .verify(Duration.ofSeconds(10));
+    }
+
+    private CardDtoTransaction buildCard() {
+        return CardDtoTransaction.builder()
                 .paymentId(1L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
@@ -74,10 +100,7 @@ public class bookingServiceIntegrationTest {
                 .expiryDate("122030")
                 .cvv("123")
                 .build();
-
-        Mono<Void> resultado = bookingService.publishBookingAcceptedEventToKafka(bookingId, card);
-
-        StepVerifier.create(resultado)
-                .verifyComplete(); // Verifica que o Mono foi concluído sem erro
     }
+
+
 }

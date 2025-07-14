@@ -1,15 +1,10 @@
-springdoc:
-  swagger-ui:
-    path: /docs
-server:
-  port: 9002
 spring:
   application:
     name: booking-service
   r2dbc:
     username: myuser
     password: secret
-    url: r2dbc:postgresql://localhost:5432/airlinedb_booking
+    url: r2dbcjdbc:tc:postgresql:14.12:/airlinedb_booking
     pool:
       max-create-connection-time: 2s
       initial-size: 5

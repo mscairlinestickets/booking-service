@@ -1,11 +1,19 @@
 package com.ercikWck.booking_service.domain;
 
 
+import com.ercikWck.booking_service.repository.BookingRepository;
+import com.ercikWck.booking_service.ticket.TicketClient;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
+import reactor.core.publisher.Mono;
+import reactor.kafka.sender.SenderResult;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,9 +23,21 @@ import java.time.temporal.ChronoUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 
 @ExtendWith(MockitoExtension.class)
 public class BookingServiceTest {
+
+    @Mock
+   private ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafka;
+
+    @Mock
+    private TicketClient ticketClient;
+
+    @Mock
+    private BookingRepository bookingRepository;
 
     @InjectMocks
     private BookingService bookingService;
@@ -36,7 +56,6 @@ public class BookingServiceTest {
         //assert
         assertThat(bookingPending).isNotNull();
         assertEquals(BookingStatus.PENDING, bookingPending.status());
-
     }
 
     @Test
@@ -52,8 +71,6 @@ public class BookingServiceTest {
         //assert
         assertEquals(BookingStatus.REJECTED, bookingRejected.status());
         assertEquals(booking.flightNumber(), bookingRejected.flightNumber());
-
-
     }
 
     @Test
@@ -69,8 +86,6 @@ public class BookingServiceTest {
         //asser
         assertEquals(BookingStatus.REJECTED, bookingRejected.status());
         assertEquals(booking.flightNumber(), bookingRejected.flightNumber());
-
-
     }
 
     @Test
@@ -100,6 +115,54 @@ public class BookingServiceTest {
         assertThat(bookingApproved).isNotNull();
         assertEquals(BookingStatus.APPROVED, bookingApproved.status());
 
+    }
+
+    @Test
+    void deveEnviarMensagemKafkaComSucesso() {
+        // ARRANGE
+        ReflectionTestUtils.setField(bookingService, "topic", "test-topic");
+
+        var bookingCreate = createBookingTest();
+        var booking = Booking.createBooking(bookingCreate, 1, BookingStatus.PENDING)
+                .toBuilder()
+                .bookingId(1L)
+                .build();
+
+        when(ticketClient.getBookingFlight(anyString(), anyInt()))
+                .thenReturn(Mono.just(booking));
+
+        when(bookingRepository.save(any()))
+                .thenReturn(Mono.just(booking));
+
+        var card = CardDtoTransaction.builder()
+                .paymentId(1L)
+                .cardholderName("Test")
+                .amount(BigDecimal.valueOf(99.90))
+                .type("credit")
+                .cardNumber("1234567812345678")
+                .expiryDate("122030")
+                .cvv("123")
+                .build();
+
+        var senderResult = mock(SenderResult.class);
+        var recordMetadata = mock(RecordMetadata.class);
+
+        when(recordMetadata.partition()).thenReturn(1);
+        when(recordMetadata.offset()).thenReturn(42L);
+        when(senderResult.recordMetadata()).thenReturn(recordMetadata);
+
+        when(reactiveKafka.send(eq("test-topic"), eq(1L), any(CardDtoTransaction.class)))
+                .thenReturn(Mono.just(senderResult));
+
+        // ACT
+        var resultado = bookingService.submitOrder("AA123", 1, card).block();
+
+        // ASSERT
+        assertNotNull(resultado);
+        assertEquals("FL1234", resultado.flightNumber());
+
+        verify(reactiveKafka, times(1))
+                .send(eq("test-topic"), eq(1L), any(CardDtoTransaction.class));
     }
 
 
