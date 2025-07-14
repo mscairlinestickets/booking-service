@@ -1,22 +1,17 @@
 package com.ercikWck.booking_service;
 
-import org.junit.jupiter.api.Disabled;
+import com.ercikWck.booking_service.config.ConfigAuditData;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@Disabled
+@Import(ConfigAuditData.class)
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
 
-	@Bean
-	@ServiceConnection
-	KafkaContainer kafkaContainer() {
-		return new KafkaContainer(DockerImageName.parse("apache/kafka-native:latest"));
-	}
 
 	@Bean
 	@ServiceConnection

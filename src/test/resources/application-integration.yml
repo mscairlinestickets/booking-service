@@ -1,0 +1,33 @@
+springdoc:
+  swagger-ui:
+    path: /docs
+server:
+  port: 9002
+spring:
+  application:
+    name: booking-service
+  r2dbc:
+    username: myuser
+    password: secret
+    url: r2dbc:postgresql://localhost:5432/airlinedb_booking
+    pool:
+      max-create-connection-time: 2s
+      initial-size: 5
+      max-size: 10
+  flyway:
+    url: jdbc:postgresql://localhost:5432/airlinedb_booking
+    user: ${spring.r2dbc.username:user}
+    password: ${spring.r2dbc.password:password}
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      client-id: ${spring.application.name}
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      transaction-id-prefix: ${spring.application.name}
+
+ticket:
+  catalog-flight-uri: "http://localhost:9001"
+message:
+  topic: booking-accepted
