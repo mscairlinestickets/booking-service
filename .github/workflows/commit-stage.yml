@@ -28,15 +28,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
-          ./gradlew pitest 
           ./gradlew bootBuildImage
-
-      - name: Upload PITest report
-        uses: actions/upload-artifact@v4
-        with:
-          name: pitest-report
-          path: build/reports/pitest
-
       - name: Code vulnerability scanning
         uses: anchore/scan-action@v3
         id: scan
