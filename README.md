@@ -1,7 +1,6 @@
-[![Build Status](https://github.com/mscairlinestickets/ticket-service/actions/workflows/commit-stage.yml/badge.svg)](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml)
+[![Build Status](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml/badge.svg)](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml)
 ![License](https://img.shields.io/github/license/mscairlinestickets/booking-service)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-green)
-
 # ✈️ booking-service
 
 O **booking-service** é um microsserviço responsável por processar **reservas de passagens aéreas**. Ele se comunica com o serviço externo `ticket-service` para validar e efetuar as reservas.
