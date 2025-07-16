@@ -175,6 +175,7 @@ A aplicação pode ser integrada com CI para:
   
   Voce pode encontra a imagem publicada neste link abaixo:  
   [Container Registry](https://github.com/mscairlinestickets?tab=packages) ou na [branch main](https://github.com/mscairlinestickets/booking-service)
+
 ---
 
 ## 🚀 Comunicação com serviços externos
