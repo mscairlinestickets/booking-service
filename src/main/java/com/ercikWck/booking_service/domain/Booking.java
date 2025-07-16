@@ -51,6 +51,7 @@ public record Booking(
         @NotBlank(message = "O nome da companhia aérea é obrigatório")
         String airlineName,
 
+
         @Schema(description = "Status da reserva", example = "PENDING", required = true)
         @NotNull(message = "O status da reserva é obrigatório")
         BookingStatus status,
@@ -63,12 +64,15 @@ public record Booking(
         @NotBlank(message = "O modelo da aeronave é obrigatório")
         String aircraftModel,
 
+        @Schema(description = "Data de criação da reserva", example = "2025-12-01T15:30:00Z", readOnly = true)
         @CreatedDate
         Instant createdDate,
 
+        @Schema(description = "Última modificação da reserva", example = "2025-12-01T16:45:00Z", readOnly = true)
         @LastModifiedDate
         Instant lastModifiedDate,
 
+        @Schema(description = "Versão do registro (controle de concorrência)", example = "1", readOnly = true)
         @Version
         int version
 

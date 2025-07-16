@@ -1,3 +1,6 @@
+[![Build Status](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml/badge.svg)](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml)
+![License](https://img.shields.io/github/license/mscairlinestickets/booking-service)
+![Coverage](https://img.shields.io/badge/coverage-85%25-green)
 [![Build Status](https://github.com/mscairlinestickets/ticket-service/actions/workflows/commit-stage.yml/badge.svg)](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml)
 ![License](https://img.shields.io/github/license/mscairlinestickets/booking-service)
 ![Coverage](https://img.shields.io/badge/coverage-85%25-green)

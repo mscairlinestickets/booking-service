@@ -1,0 +1,222 @@
+openapi: 3.0.1
+info:
+  title: Serviço de Reservas de Passagens Aéreas
+  description: |
+    Microsserviço responsável pela gestão de reservas (bookings) de passagens aéreas.
+
+    Ele orquestra a comunicação com o serviço de passagens (ticket-service), processa requisições de reserva, armazena o estado dos pedidos e publica eventos de confirmação ou rejeição. Também realiza integração assíncrona com serviços de pagamento, despacho e notificação via mensageria (RabbitMQ e Kafka).
+
+    Projeto pessoal desenvolvido por Erick Silva, seguindo princípios de Clean Architecture, programação reativa com Spring WebFlux, e boas práticas de design distribuído.
+  contact:
+    name: Erick Silva
+    url: https://github.com/erickknsilva
+    email: erickk.nsilva100@gmail.com
+  version: "1.0"
+servers:
+- url: http://localhost:9002
+  description: Generated server url
+paths:
+  /bookings:
+    get:
+      tags:
+      - booking-controller
+      summary: Listar todas as reservas
+      description: Retorna uma lista com todas as reservas cadastradas.
+      operationId: findAll
+      responses:
+        "200":
+          description: Reservas encontradas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    post:
+      tags:
+      - booking-controller
+      summary: Criar nova reserva
+      description: Cria uma nova reserva com os dados do voo e do pagamento.
+      operationId: createBooking
+      requestBody:
+        description: Dados da reserva
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingRequestPayload"
+        required: true
+      responses:
+        "201":
+          description: Reserva criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "400":
+          description: Dados inválidos ou incompletos
+  /bookings/{id}:
+    get:
+      tags:
+      - booking-controller
+      summary: Buscar reserva por ID
+      description: Retorna os dados de uma reserva específica.
+      operationId: findById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Reserva encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "404":
+          description: Reserva não encontrada
+components:
+  schemas:
+    BookingRequestPayload:
+      required:
+      - flightNumber
+      - quantity
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          description: Número do voo
+          example: FL1234
+        quantity:
+          minimum: 1
+          type: integer
+          description: Quantidade de passagens solicitadas
+          format: int32
+          example: 2
+        card:
+          $ref: "#/components/schemas/CardDtoTransaction"
+    CardDtoTransaction:
+      required:
+      - amount
+      - cardNumber
+      - cardholderName
+      - cvv
+      - expiryDate
+      - type
+      type: object
+      properties:
+        paymentId:
+          type: integer
+          description: ID do pagamento
+          format: int64
+          example: 98765
+        cardholderName:
+          type: string
+          description: Nome do titular do cartão
+          example: João da Silva
+        amount:
+          type: number
+          description: Valor total da compra
+          example: 2599.9
+        type:
+          type: string
+          description: Tipo de cartão (credito ou debito)
+          example: credito
+        cardNumber:
+          pattern: "^([0-9]{16})$"
+          type: string
+          description: Número do cartão
+          example: "1234567890123456"
+        expiryDate:
+          pattern: "^([0-9]{6})$"
+          type: string
+          description: Data de expiração (MMYYYY)
+          example: "122025"
+        cvv:
+          pattern: "^([0-9]{3})$"
+          type: string
+          description: Código de segurança (CVV)
+          example: "123"
+    Booking:
+      required:
+      - aircraftModel
+      - airlineName
+      - departureDateTime
+      - destination
+      - flightNumber
+      - icaoCode
+      - origin
+      - price
+      - quantity
+      - status
+      type: object
+      properties:
+        bookingId:
+          type: integer
+          format: int64
+        flightNumber:
+          type: string
+          description: Número do voo
+          example: FL1234
+        origin:
+          type: string
+          description: Código do aeroporto de origem
+          example: GRU
+        destination:
+          type: string
+          description: Código do aeroporto de destino
+          example: JFK
+        departureDateTime:
+          type: string
+          description: Data e hora de partida
+          format: date-time
+        price:
+          minimum: 0.0
+          exclusiveMinimum: true
+          type: number
+          description: Preço por passagem
+          example: 1299.9
+        quantity:
+          minimum: 1
+          type: integer
+          description: Quantidade de passagens solicitadas
+          format: int32
+          example: 2
+        airlineName:
+          type: string
+          description: Nome da companhia aérea
+          example: Latam Airlines
+        status:
+          type: string
+          description: Status da reserva
+          example: PENDING
+          enum:
+          - PENDING
+          - APPROVED
+          - REJECTED
+        icaoCode:
+          type: string
+          description: Código ICAO da aeronave
+          example: LAT
+        aircraftModel:
+          type: string
+          description: Modelo da aeronave
+          example: Boeing 787
+        createdDate:
+          type: string
+          description: Data de criação da reserva
+          format: date-time
+          readOnly: true
+          example: 2025-12-01T15:30:00Z
+        lastModifiedDate:
+          type: string
+          description: Última modificação da reserva
+          format: date-time
+          readOnly: true
+          example: 2025-12-01T16:45:00Z
+        version:
+          type: integer
+          description: Versão do registro (controle de concorrência)
+          format: int32
+          readOnly: true
+          example: 1
