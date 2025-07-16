@@ -8,14 +8,16 @@ O projeto é construído com **Spring WebFlux** e segue um modelo **reativo e n�
 
 ## 🧪 Estratégia de Desenvolvimento
 
-O projeto foi desenvolvido utilizando a abordagem **API First**, onde o contrato da API é definido antes da implementação e TDD para guiar o desenvolvimento, 
-garantindo a confiança no código e a qualidade.
+O projeto foi desenvolvido utilizando a abordagem Code First, onde o código Java é implementado primeiro e, em seguida, o contrato OpenAPI é gerado automaticamente utilizando ferramentas como o Springdoc e exportado via curl. O desenvolvimento é guiado por testes (TDD), garantindo confiança no código e qualidade nas entregas.
 
-Beneficios da API First
-- Desenvolvimento paralelo entre BackEnd e FrontEnd
-- Clareza nos endpoints expostos
-- Desenvolvimento - retornos de objetos especificos como DTOS
-- Evolução desacoplada da interface REST
+Benefícios dessa abordagem
+
+- Clareza e controle total sobre a implementação da API
+- Geração automática e consistente da documentação OpenAPI
+- Facilidade para versionamento e rastreamento da evolução dos endpoints
+- Integração contínua com Swagger para visualização e exportação do contrato
+
+💡 Embora a documentação esteja disponível como se fosse "API First", o modelo seguido aqui é Code First com exportação posterior do contrato.
 ---
 
 ## 🔧 Tecnologias utilizadas
@@ -103,7 +105,7 @@ src/main/java
 
 ---
 
-## 🤪 Executando os testes
+## 🧪 Executando os testes
 
 Este projeto inclui testes:
 
@@ -138,11 +140,12 @@ curl http://localhost:9002/v3/api-docs.yaml -o openapi.yaml
 ```
 
 ---
-📦 **Observabilidade & Métricas**
+
+## 📊 Observabilidade & Métricas
   - Micrometer + Prometheus – coleta de métricas
   - OpenTelemetry (OTel Java Agent) – rastreabilidade distribuída (tracing)
 
- 🐳 **Infraestrutura & DevOps**
+## 🐳 Infraestrutura & DevOps
   - Docker – containerização da aplicação
   - GitHub Actions – CI/CD com build, testes e publicação de imagem
   - GHCR (GitHub Container Registry) – armazenamento da imagem gerada
@@ -156,7 +159,9 @@ A aplicação pode ser integrada com CI para:
 * Geração e validação do contrato OpenAPI
 * Testes (unitários e de integração)
 * Build de imagem com PacketoBuildPacks `./gradlew bootBuildImage`
-
+  
+  Voce pode encontra a imagem publicada neste link abaixo:  
+  [Container Registry](https://github.com/mscairlinestickets?tab=packages) ou na [branch main](https://github.com/mscairlinestickets/booking-service)
 ---
 
 ## 🚀 Comunicação com serviços externos
