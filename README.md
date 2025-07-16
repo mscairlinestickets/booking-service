@@ -6,6 +6,18 @@ O projeto é construído com **Spring WebFlux** e segue um modelo **reativo e n�
 
 ---
 
+## 🧪 Estratégia de Desenvolvimento
+
+O projeto foi desenvolvido utilizando a abordagem **API First**, onde o contrato da API é definido antes da implementação e TDD para guiar o desenvolvimento, 
+garantindo a confiança no código e a qualidade.
+
+Beneficios da API First
+- Desenvolvimento paralelo entre BackEnd e FrontEnd
+- Clareza nos endpoints expostos
+- Desenvolvimento - retornos de objetos especificos como DTOS
+- Evolução desacoplada da interface REST
+---
+
 ## 🔧 Tecnologias utilizadas
 
 * **Java 21**
@@ -126,6 +138,15 @@ curl http://localhost:9002/v3/api-docs.yaml -o openapi.yaml
 ```
 
 ---
+📦 **Observabilidade & Métricas**
+  - Micrometer + Prometheus – coleta de métricas
+  - OpenTelemetry (OTel Java Agent) – rastreabilidade distribuída (tracing)
+
+ 🐳 **Infraestrutura & DevOps**
+  - Docker – containerização da aplicação
+  - GitHub Actions – CI/CD com build, testes e publicação de imagem
+  - GHCR (GitHub Container Registry) – armazenamento da imagem gerada
+> ⚠️ Configure as variáveis `registryUsername`, `registryToken` e `registryUrl` no Gradle para publicação da imagem.
 
 ## 🛠️ CI/CD
 
@@ -136,13 +157,11 @@ A aplicação pode ser integrada com CI para:
 * Testes (unitários e de integração)
 * Build de imagem com PacketoBuildPacks `./gradlew bootBuildImage`
 
-> ⚠️ Configure as variáveis `registryUsername`, `registryToken` e `registryUrl` no Gradle para publicação da imagem.
-
 ---
 
 ## 🚀 Comunicação com serviços externos
 
-* 🔁 **`ticket-service`**: Consome endpoint POST `/api/flights/{flight}/{quantity}` para validar disponibilidade de voo.
+* 🔁 **`ticket-service`**: Consome endpoint POST `/api/flights/{flight}/{quantity}` para validar disponibilidade de voo e reservar.
 * 📤 **Kafka**: Publica mensagens no tópico `${message.topic}` com os dados da transação de pagamento.
 
 ---
@@ -169,4 +188,7 @@ message.topic: booking-accepted
 ## 👨‍💼 Autor
 
 **Erick Nunes da Silva**
-Booking Microservice — 2025
+Booking Microservice — Julho de 2025
+
+📎 [LinkedIn](https://www.linkedin.com/in/erick-silva-414098225/)  
+💻 [GitHub](https://github.com/erickknsilva)
