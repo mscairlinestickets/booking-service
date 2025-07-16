@@ -88,6 +88,14 @@ src/main/java
 
 ```
 ---
+### 📮 Endpoints da API
+
+#### ✈️ Voos (`/bookings`)
+
+| Método   | Caminho                       | Descrição                                 | Status Esperado          | Corpo de Resposta                   |
+|----------|-------------------------------|-------------------------------------------|--------------------------|-------------------------------------|
+| `POST`    | `/bookings`                  | Cria uma reserva                          | `201 OK`                 | Objeto `Booking`                    |
+| `GET`    | `/bookings/{id}`              | Busca uma reserva pelo Id                 | `200 OK` / `404`         | Objeto `Booking` ou NotFound        |
 
 ## 🚀 Como executar localmente
 
