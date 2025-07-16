@@ -1,3 +1,7 @@
+[![Build Status](https://github.com/mscairlinestickets/ticket-service/actions/workflows/commit-stage.yml/badge.svg)](https://github.com/mscairlinestickets/booking-service/actions/workflows/commit-stage.yml)
+![License](https://img.shields.io/github/license/mscairlinestickets/booking-service)
+![Coverage](https://img.shields.io/badge/coverage-85%25-green)
+
 # ✈️ booking-service
 
 O **booking-service** é um microsserviço responsável por processar **reservas de passagens aéreas**. Ele se comunica com o serviço externo `ticket-service` para validar e efetuar as reservas.
@@ -17,7 +21,7 @@ Benefícios dessa abordagem
 - Facilidade para versionamento e rastreamento da evolução dos endpoints
 - Integração contínua com Swagger para visualização e exportação do contrato
 
-💡 Embora a documentação esteja disponível como se fosse "API First", o modelo seguido aqui é Code First com exportação posterior do contrato.
+  💡 Embora a documentação esteja disponível como se fosse "API First", o modelo seguido aqui é Code First com exportação posterior do contrato.
 ---
 
 ## 🔧 Tecnologias utilizadas
@@ -90,7 +94,7 @@ src/main/java
 ---
 ### 📮 Endpoints da API
 
-#### ✈️ Voos (`/bookings`)
+#### ✈️ Reserva (`/bookings`)
 
 | Método   | Caminho                       | Descrição                                 | Status Esperado          | Corpo de Resposta                   |
 |----------|-------------------------------|-------------------------------------------|--------------------------|-------------------------------------|
