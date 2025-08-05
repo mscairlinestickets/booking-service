@@ -1,0 +1,9 @@
+ticket:
+  catalog-flight-uri: "http://ticket-service"
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://airline-postgres/airlinedb_booking
+    username: user
+    password: password
+  flyway:
+    url: jdbc:postgresql://airline-postgres/airlinedb_booking

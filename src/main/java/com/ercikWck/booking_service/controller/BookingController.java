@@ -59,14 +59,8 @@ public class BookingController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Booking> createBooking(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Dados da reserva",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = BookingRequestPayload.class))
-            )
-            @RequestBody @Valid BookingRequestPayload request) {
-        return bookingService.submitOrder(request.flightNumber(), request.quantity(), request.card());
+    public Mono<Booking> createBooking(@RequestBody @Valid BookingRequestPayload payload) {
+        return bookingService.submitOrder(payload, payload.card());
     }
 
 }

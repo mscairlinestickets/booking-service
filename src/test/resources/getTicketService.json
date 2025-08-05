@@ -1,24 +1,13 @@
 {
   "request": {
     "method": "POST",
-    "url": "/api/flights/TK1933/3"
+    "url": "/api/flights/orderBooking"
   },
   "response": {
-    "status": 200,
-    "body":   {
-      "flightNumber": "TK1933",
-      "origin": "GRU",
-      "destination": "JFK",
-      "departureDateTime": "2025-08-12T18:30:00",
-      "price": 1200.50,
-      "quantity": 3,
-      "airlineName": "Latam Airlines",
-      "status": "PENDING",
-      "icaoCode": "LAT",
-      "aircraftModel": "Boeing 787"
-    },
+    "status": 201,
     "headers": {
       "Content-Type": "application/json"
-    }
+    },
+    "body": "{\"flightNumber\":\"TK1933\",\"origin\":\"GRU\",\"destination\":\"JFK\",\"departureDateTime\":\"2025-08-12T18:30:00\",\"price\":1200.50,\"quantity\":3,\"airlineName\":\"Latam Airlines\",\"status\":\"PENDING\",\"icaoCode\":\"LAT\",\"aircraftModel\":\"Boeing 787\"}"
   }
 }
