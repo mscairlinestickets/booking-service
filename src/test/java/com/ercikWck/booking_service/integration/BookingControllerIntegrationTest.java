@@ -28,6 +28,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.BDDMockito.given;
 
@@ -77,12 +79,14 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
                         assertThat(actual.status()).isEqualTo(BookingStatus.PENDING);
                     });
 
-            WireMock.verify(WireMock.postRequestedFor(WireMock.urlEqualTo("/api/flights/TK1933/3")));
+            WireMock.verify(WireMock.postRequestedFor(WireMock.urlEqualTo("/api/flights/orderBooking"))
+                    .withRequestBody(matchingJsonPath("$.flightNumber", equalTo("TK1933")))
+                    .withRequestBody(matchingJsonPath("$.quantity", equalTo("3"))));
 
         }
 
         private static void setupArrangePostWireMock() {
-            WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/api/flights/TK1933/3"))
+            WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/api/flights/orderBooking"))
                     .willReturn(WireMock.aResponse()
                             .withStatus(201)
                             .withHeader("Content-Type", "application/json")
@@ -101,6 +105,7 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
                                     }
                                     """)));
         }
+
 
     }
 
@@ -124,9 +129,10 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
             int quantity = 3;
 
             CardDtoTransaction card = buildCard();
+            BookingRequestPayload payload = new BookingRequestPayload(flightNumber, quantity, null);
 
             // Simula ausência de voo (não encontrado)
-            given(ticketClient.getBookingFlight(flightNumber, quantity))
+            given(ticketClient.getBookingFlight(payload))
                     .willReturn(Mono.empty());
 
             webTestClient.post()

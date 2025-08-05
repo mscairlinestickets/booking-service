@@ -1,6 +1,7 @@
 package com.ercikWck.booking_service.domain;
 
 
+import com.ercikWck.booking_service.controller.dto.BookingRequestPayload;
 import com.ercikWck.booking_service.repository.BookingRepository;
 import com.ercikWck.booking_service.ticket.TicketClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -128,7 +129,7 @@ public class BookingServiceTest {
                 .bookingId(1L)
                 .build();
 
-        when(ticketClient.getBookingFlight(anyString(), anyInt()))
+        when(ticketClient.getBookingFlight(any(BookingRequestPayload.class)))
                 .thenReturn(Mono.just(booking));
 
         when(bookingRepository.save(any()))
@@ -154,8 +155,9 @@ public class BookingServiceTest {
         when(reactiveKafka.send(eq("test-topic"), eq(1L), any(CardDtoTransaction.class)))
                 .thenReturn(Mono.just(senderResult));
 
+        BookingRequestPayload payload = new BookingRequestPayload("AA123", 1,null);
         // ACT
-        var resultado = bookingService.submitOrder("AA123", 1, card).block();
+        var resultado = bookingService.submitOrder(payload,card).block();
 
         // ASSERT
         assertNotNull(resultado);

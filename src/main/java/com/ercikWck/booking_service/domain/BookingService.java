@@ -38,9 +38,9 @@ public class BookingService {
         return ticketClient.getBookingFlight(payload)
                 .map(booking -> buildPendingBooking(booking, payload.quantity()))
                 .defaultIfEmpty(buildRejectBookingOrder(payload.flightNumber(), payload.quantity()))
-                .flatMap(repository::save);
-//                .flatMap(savedBooking -> publishBookingAcceptedEventToKafka(savedBooking.bookingId(), card)
-//                        .thenReturn(savedBooking));
+                .flatMap(repository::save)
+                .flatMap(savedBooking -> publishBookingAcceptedEventToKafka(savedBooking.bookingId(), card)
+                        .thenReturn(savedBooking));
 
     }
 
