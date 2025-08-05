@@ -85,7 +85,7 @@ dependencyManagement {
 bootBuildImage {
     builder = "docker.io/paketobuildpacks/builder-jammy-base"
     imageName = "${project.name}"
-    environment = ["BP_JVM_VERSION": "17"]
+    environment = ["BP_JVM_VERSION": "21"]
     docker {
         publishRegistry {
             username = project.findProperty("registryUsername")

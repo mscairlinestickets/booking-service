@@ -7,8 +7,8 @@ spring:
   application:
     name: booking-service
   r2dbc:
-    username: myuser
-    password: secret
+    username: user
+    password: password
     url: r2dbc:postgresql://localhost:5432/airlinedb_booking
     pool:
       max-create-connection-time: 2s

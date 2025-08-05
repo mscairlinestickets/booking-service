@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - booking-configmap.yaml
+  - service-clusterip.yaml
+  - deployment.yaml
+
+configMapGenerator:
+  - name: booking-config
+    files:
+      - application.yaml
+    options:
+      labels:
+        app: booking-service

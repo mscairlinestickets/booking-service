@@ -1,5 +1,6 @@
 package com.ercikWck.booking_service.domain;
 
+import com.ercikWck.booking_service.controller.dto.BookingRequestPayload;
 import com.ercikWck.booking_service.repository.BookingRepository;
 import com.ercikWck.booking_service.ticket.TicketClient;
 import org.slf4j.Logger;
@@ -32,13 +33,14 @@ public class BookingService {
     }
 
     @Transactional(transactionManager = "connectionFactoryTransactionManager")
-    public Mono<Booking> submitOrder(String flightNumber, Integer quantity, CardDtoTransaction card) {
+    public Mono<Booking> submitOrder(BookingRequestPayload payload, CardDtoTransaction card) {
 
-        return ticketClient.getBookingFlight(flightNumber, quantity)
-                .map(booking -> buildPendingBooking(booking, quantity))
-                .defaultIfEmpty(buildRejectBookingOrder(flightNumber, quantity))
-                .flatMap(repository::save)
-                .flatMap(savedBooking -> publishBookingAcceptedEventToKafka(savedBooking.bookingId(), card).thenReturn(savedBooking));
+        return ticketClient.getBookingFlight(payload)
+                .map(booking -> buildPendingBooking(booking, payload.quantity()))
+                .defaultIfEmpty(buildRejectBookingOrder(payload.flightNumber(), payload.quantity()))
+                .flatMap(repository::save);
+//                .flatMap(savedBooking -> publishBookingAcceptedEventToKafka(savedBooking.bookingId(), card)
+//                        .thenReturn(savedBooking));
 
     }
 

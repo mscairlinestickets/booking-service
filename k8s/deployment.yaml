@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  labels:
+    app: booking-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      name: booking-service
+      labels:
+        app: booking-service
+    spec:
+      containers:
+        - name: booking-service-container
+          image: booking-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9002
+          envFrom:
+            - configMapRef:
+                name: booking-envs
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9002
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 9002
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          volumeMounts:
+            - name: booking-config-volume
+              mountPath: /workspace/config
+      volumes:
+        - name: booking-config-volume
+          configMap:
+            name: booking-config
+
