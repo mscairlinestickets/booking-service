@@ -5,6 +5,7 @@ resources:
   - booking-configmap.yaml
   - service-clusterip.yaml
   - deployment.yaml
+  - node-service.yaml
 
 configMapGenerator:
   - name: booking-config

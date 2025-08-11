@@ -19,7 +19,7 @@ spring:
     user: ${spring.r2dbc.username:user}
     password: ${spring.r2dbc.password:password}
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_SERVERS:kafka-airlines:9092}
     producer:
       client-id: ${spring.application.name}
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
@@ -27,9 +27,14 @@ spring:
       acks: all
       transaction-id-prefix: ${spring.application.name}
 
+
+
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{trace_id},%X{span_id}]"
+  level:
+    org.apache.kafka.clients.producer.KafkaProducer: DEBUG
+    reactor.kafka.sender.internals: DEBUG
 
 management:
   endpoints:
