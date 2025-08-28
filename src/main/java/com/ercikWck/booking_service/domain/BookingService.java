@@ -42,6 +42,7 @@ public class BookingService {
                 .flatMap(repository::save)
                 .flatMap(savedBooking -> {
                     CardDtoTransaction updatedCard = card.toBuilder()
+                            .bookId(savedBooking.bookingId())
                             .amount(savedBooking.price())
                             .build();
                     return publishBookingAcceptedEventToKafka(savedBooking.bookingId(), updatedCard)

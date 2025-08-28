@@ -8,6 +8,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "body": "{\"flightNumber\":\"TK1933\",\"origin\":\"GRU\",\"destination\":\"JFK\",\"departureDateTime\":\"2025-08-12T18:30:00\",\"price\":1200.50,\"quantity\":3,\"airlineName\":\"Latam Airlines\",\"status\":\"PENDING\",\"icaoCode\":\"LAT\",\"aircraftModel\":\"Boeing 787\"}"
+    "body": "{\"flightNumber\":\"TK1933\",\"quantity\":3,\"card\":{\"paymentId\":98765,\"cardholderName\":\"João da Silva\",\"amount\":1200.50,\"type\":\"credito\",\"cardNumber\":\"1234567890123456\",\"expiryDate\":\"122025\",\"cvv\":\"123\"},\"origin\":\"GRU\",\"destination\":\"JFK\",\"departureDateTime\":\"2025-08-12T18:30:00\",\"airlineName\":\"Latam Airlines\",\"status\":\"PENDING\",\"icaoCode\":\"LAT\",\"aircraftModel\":\"Boeing 787\"}"
   }
 }
