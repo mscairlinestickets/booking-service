@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 
 @Service
@@ -39,10 +40,15 @@ public class BookingService {
                 .map(booking -> buildPendingBooking(booking, payload.quantity()))
                 .defaultIfEmpty(buildRejectBookingOrder(payload.flightNumber(), payload.quantity()))
                 .flatMap(repository::save)
-                .flatMap(savedBooking -> publishBookingAcceptedEventToKafka(savedBooking.bookingId(), card)
-                        .thenReturn(savedBooking));
-
+                .flatMap(savedBooking -> {
+                    CardDtoTransaction updatedCard = card.toBuilder()
+                            .amount(savedBooking.price())
+                            .build();
+                    return publishBookingAcceptedEventToKafka(savedBooking.bookingId(), updatedCard)
+                            .thenReturn(savedBooking);
+                });
     }
+
 
     public Booking buildPendingBooking(Booking booking, int quantity) {
 
@@ -58,18 +64,28 @@ public class BookingService {
                 .status(BookingStatus.APPROVED)
                 .build();
     }
+    private static CardDtoTransaction getCardDtoTransaction(BookingRequestPayload payload, CardDtoTransaction card, Booking savedBooking) {
+        // calcula o total
+        BigDecimal total = savedBooking.price().multiply(BigDecimal.valueOf(payload.quantity()));
+        // cria novo card com amount preenchido
+        CardDtoTransaction updatedCard = card.toBuilder()
+                .amount(total)
+                .build();
+        return updatedCard;
+    }
 
     public Mono<Void> publishBookingAcceptedEventToKafka(Long bookingId, CardDtoTransaction cardTransaction) {
         return reactiveKafka.send(topic, bookingId, cardTransaction)
-                .retryWhen(Retry.backoff(5, Duration.ofMillis(100)).maxBackoff(Duration.ofSeconds(2)))
-                .doOnSuccess(voidSenderResult -> log.info("Enviando ao Kafka: {}", voidSenderResult))
-                .doOnError(error -> log.error("Erro ao enviar mensagem par ao kafka", error))
-                .doOnSuccess(result -> log.info("Transação enviada com sucesso: {}", cardTransaction))
+                .doOnNext(voidSenderResult -> log.info("Enviando ao Kafka: {}", voidSenderResult))
                 .doOnNext(result -> {
                     var metadata = result.recordMetadata();
                     log.info("Mensagem enviada para partição {} com offset {}", metadata.partition(), metadata.offset());
                 })
-                .then();
+                .doOnError(error -> log.error("Erro ao enviar mensagem par ao kafka", error))
+                .retryWhen(Retry.backoff(5, Duration.ofMillis(100)).maxBackoff(Duration.ofSeconds(3))
+                        .transientErrors(true))
+                .then()
+                .doOnSuccess(result -> log.info("Transação enviada com sucesso: {}", cardTransaction));
     }
 
 }

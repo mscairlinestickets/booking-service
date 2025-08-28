@@ -79,13 +79,17 @@ public record Booking(
 ) {
 
     public static Booking createBooking(Booking booking, int quantity, BookingStatus status) {
-        return new Booking(null, booking.flightNumber(), booking.origin(), booking.destination(), booking.departureDateTime(), booking.price(), quantity, booking.airlineName(),
+        return new Booking(null, booking.flightNumber(), booking.origin(), booking.destination(), booking.departureDateTime(), getMultiply(booking, quantity), quantity, booking.airlineName(),
                 status, booking.icaoCode(), booking.aircraftModel(), null, null, 0);
     }
 
+    private static BigDecimal getMultiply(Booking booking, int quantity) {
+        return booking.price().multiply(BigDecimal.valueOf(quantity));
+    }
+
     public static Booking createRejectedBooking(String flightNumber, int quantity) {
-            return new Booking(null, flightNumber, null, null,null,null, quantity, null,
-                    BookingStatus.REJECTED, null,null, null, null, 0);
+        return new Booking(null, flightNumber, null, null, null, null, quantity, null,
+                BookingStatus.REJECTED, null, null, null, null, 0);
     }
 
 }

@@ -5,4 +5,8 @@ metadata:
 data:
   BPL_JVM_THREAD_COUNT: "50"
   SPRING_PROFILES_ACTIVE: test
+  JAVA_TOOL_OPTIONS: "-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.33.3.jar"
+  OTEL_SERVICE_NAME: "booking-service"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://tempo:4317"
+  OTEL_METRICS_EXPORTER: "none"
 
