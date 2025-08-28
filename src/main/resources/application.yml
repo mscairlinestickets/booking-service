@@ -40,7 +40,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: configprops, env, flyway, health, heapdump, loggers, mappings, prometheus
+        include: configprops, env, flyway, health, heapdump, info, loggers, mappings, prometheus
   endpoint:
     health:
       show-details: always

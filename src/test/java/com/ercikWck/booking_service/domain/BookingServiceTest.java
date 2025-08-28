@@ -136,7 +136,6 @@ public class BookingServiceTest {
                 .thenReturn(Mono.just(booking));
 
         var card = CardDtoTransaction.builder()
-                .paymentId(1L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
                 .type("credit")
@@ -170,7 +169,6 @@ public class BookingServiceTest {
 
     private static CardDtoTransaction createCard() {
         return CardDtoTransaction.builder()
-                .paymentId(1L)
                 .cardholderName("João Silva")
                 .amount(new BigDecimal("150.00"))
                 .type("credito")

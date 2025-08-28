@@ -151,7 +151,6 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
 
     private CardDtoTransaction buildCard() {
         return CardDtoTransaction.builder()
-                .paymentId(1L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
                 .type("credit")

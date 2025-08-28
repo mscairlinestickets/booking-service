@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -79,7 +78,7 @@ public class BookingServiceIntegrationTest {
         StepVerifier.create(
                         kafkaReceiver.receive()
                                 .map(record -> record.value())
-                                .filter(recebido -> recebido.paymentId().equals(esperado.paymentId()))
+                                .filter(recebido -> recebido.bookId().equals(esperado.bookId()))
                                 .take(1)
                 )
                 .expectNextMatches(recebido ->
@@ -92,7 +91,7 @@ public class BookingServiceIntegrationTest {
 
     private CardDtoTransaction buildCard() {
         return CardDtoTransaction.builder()
-                .paymentId(1L)
+                .bookId(123L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
                 .type("credit")
