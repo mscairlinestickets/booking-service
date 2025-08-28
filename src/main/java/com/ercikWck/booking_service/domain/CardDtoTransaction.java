@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public record CardDtoTransaction(
 
+        Long bookId,
+
         @Size(min = 3, max = 170, message = "O nome deve conter entre {min} e {max} caracteres.")
         String name,
 

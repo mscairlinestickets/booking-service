@@ -91,7 +91,7 @@ public class BookingServiceIntegrationTest {
 
     private CardDtoTransaction buildCard() {
         return CardDtoTransaction.builder()
-                .paymentId(1L)
+                .bookId(123L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
                 .type("credit")
