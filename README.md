@@ -4,7 +4,7 @@
 <br>
 Desenvolvedor: Erick Nunes da Silva 
 <br>
-https://github.com/erickknsilva
+GitHub: https://github.com/erickknsilva
 
 
 # ✈️ booking-service
