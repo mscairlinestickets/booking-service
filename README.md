@@ -17,7 +17,7 @@ O projeto é construído com **Spring WebFlux** e segue um modelo **reativo e n�
 
 ## 🧪 Estratégia de Desenvolvimento
 
-O projeto foi desenvolvido utilizando a abordagem Code First, onde o código Java é implementado primeiro e, em seguida, o contrato OpenAPI é gerado automaticamente utilizando ferramentas como o Springdoc e exportado via curl. O desenvolvimento é guiado por testes (TDD), garantindo confiança no código e qualidade nas entregas.
+O projeto foi projetado utilizando a abordagem Code First, onde o código Java é implementado primeiro e, em seguida, o contrato OpenAPI é gerado automaticamente utilizando ferramentas como o Springdoc e exportado via curl. O desenvolvimento é guiado por testes (TDD), garantindo confiança no código e qualidade nas entregas.
 
 Benefícios dessa abordagem
 
