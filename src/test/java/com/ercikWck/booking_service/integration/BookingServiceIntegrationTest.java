@@ -3,7 +3,7 @@ package com.ercikWck.booking_service.integration;
 import com.ercikWck.booking_service.TestContainerKafkaConfig;
 import com.ercikWck.booking_service.TestContainersPostgresConfiguration;
 import com.ercikWck.booking_service.domain.BookingService;
-import com.ercikWck.booking_service.domain.CardDtoTransaction;
+import com.ercikWck.booking_service.domain.PaymentDtoTransaction;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +44,7 @@ public class BookingServiceIntegrationTest {
     @Test
     void deveEnviarMensagemParaKafkaComSucesso() {
         Long bookingId = 123L;
-        CardDtoTransaction card = buildCard();
+        PaymentDtoTransaction card = buildCard();
 
         Mono<Void> resultado = bookingService.publishBookingAcceptedEventToKafka(bookingId, card);
 
@@ -55,7 +55,7 @@ public class BookingServiceIntegrationTest {
 
 
     // Cria o KafkaReceiver configurado para consumir do tópico
-    private KafkaReceiver<Long, CardDtoTransaction> criarKafkaReceiver() {
+    private KafkaReceiver<Long, PaymentDtoTransaction> criarKafkaReceiver() {
         Map<String, Object> props = new HashMap<>();
         props.put("bootstrap.servers", bootstrapServers);
         props.put("key.deserializer", LongDeserializer.class.getName());
@@ -63,17 +63,17 @@ public class BookingServiceIntegrationTest {
         props.put("spring.json.trusted.packages", "*");
         props.put("group.id", UUID.randomUUID().toString());
         props.put("auto.offset.reset", "earliest");
-        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CardDtoTransaction.class.getName());
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, PaymentDtoTransaction.class.getName());
 
-        ReceiverOptions<Long, CardDtoTransaction> receiverOptions = ReceiverOptions.<Long, CardDtoTransaction>create(props)
+        ReceiverOptions<Long, PaymentDtoTransaction> receiverOptions = ReceiverOptions.<Long, PaymentDtoTransaction>create(props)
                 .subscription(Collections.singleton(topic));
 
         return KafkaReceiver.create(receiverOptions);
     }
 
     // Verifica se o Kafka recebeu e leu a mensagem corretamente
-    private void verificarMensagemRecebida(Long bookingId, CardDtoTransaction esperado) {
-        KafkaReceiver<Long, CardDtoTransaction> kafkaReceiver = criarKafkaReceiver();
+    private void verificarMensagemRecebida(Long bookingId, PaymentDtoTransaction esperado) {
+        KafkaReceiver<Long, PaymentDtoTransaction> kafkaReceiver = criarKafkaReceiver();
 
         StepVerifier.create(
                         kafkaReceiver.receive()
@@ -89,8 +89,8 @@ public class BookingServiceIntegrationTest {
                 .verify(Duration.ofSeconds(10));
     }
 
-    private CardDtoTransaction buildCard() {
-        return CardDtoTransaction.builder()
+    private PaymentDtoTransaction buildCard() {
+        return PaymentDtoTransaction.builder()
                 .bookId(123L)
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))

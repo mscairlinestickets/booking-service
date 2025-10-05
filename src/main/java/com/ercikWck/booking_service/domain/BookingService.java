@@ -25,23 +25,23 @@ public class BookingService {
 
     private final TicketClient ticketClient;
     private final BookingRepository repository;
-    private final ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafka;
+    private final ReactiveKafkaProducerTemplate<Long, PaymentDtoTransaction> reactiveKafka;
 
-    public BookingService(TicketClient ticketClient, BookingRepository repository, ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafka) {
+    public BookingService(TicketClient ticketClient, BookingRepository repository, ReactiveKafkaProducerTemplate<Long, PaymentDtoTransaction> reactiveKafka) {
         this.ticketClient = ticketClient;
         this.repository = repository;
         this.reactiveKafka = reactiveKafka;
     }
 
     @Transactional(transactionManager = "connectionFactoryTransactionManager")
-    public Mono<Booking> submitOrder(BookingRequestPayload payload, CardDtoTransaction card) {
+    public Mono<Booking> submitOrder(BookingRequestPayload payload, PaymentDtoTransaction card) {
 
         return ticketClient.getBookingFlight(payload)
-                .map(booking -> buildPendingBooking(booking, payload.quantity()))
-                .defaultIfEmpty(buildRejectBookingOrder(payload.flightNumber(), payload.quantity()))
+                .map(booking -> buildPendingBooking(booking, payload.paymentType(), payload.quantity()))
+                .defaultIfEmpty(buildRejectBookingOrder(payload.flightNumber(), payload.paymentType(), payload.quantity()))
                 .flatMap(repository::save)
                 .flatMap(savedBooking -> {
-                    CardDtoTransaction updatedCard = card.toBuilder()
+                    PaymentDtoTransaction updatedCard = card.toBuilder()
                             .bookId(savedBooking.bookingId())
                             .amount(savedBooking.price())
                             .build();
@@ -50,14 +50,14 @@ public class BookingService {
                 });
     }
 
+    public Booking buildPendingBooking(Booking booking,PaymentType paymentType, int quantity) {
 
-    public Booking buildPendingBooking(Booking booking, int quantity) {
-
-        return Booking.createBooking(booking, quantity, BookingStatus.PENDING);
+        return Booking.createBooking(booking, quantity, paymentType,  BookingStatus.PENDING);
     }
 
-    public Booking buildRejectBookingOrder(String flightNumber, int quantity) {
-        return Booking.createRejectedBooking(flightNumber, quantity);
+
+    public Booking buildRejectBookingOrder(String flightNumber, PaymentType paymentType, int quantity) {
+        return Booking.createRejectedBooking(flightNumber, paymentType, quantity);
     }
 
     public Booking buildBookingApproved(Booking existBooking) {
@@ -65,17 +65,19 @@ public class BookingService {
                 .status(BookingStatus.APPROVED)
                 .build();
     }
-    private static CardDtoTransaction getCardDtoTransaction(BookingRequestPayload payload, CardDtoTransaction card, Booking savedBooking) {
+
+    private static PaymentDtoTransaction getCardDtoTransaction(BookingRequestPayload payload, PaymentDtoTransaction
+            paymentTransaction, Booking savedBooking) {
         // calcula o total
         BigDecimal total = savedBooking.price().multiply(BigDecimal.valueOf(payload.quantity()));
         // cria novo card com amount preenchido
-        CardDtoTransaction updatedCard = card.toBuilder()
+        PaymentDtoTransaction updatedPayment = paymentTransaction.toBuilder()
                 .amount(total)
                 .build();
-        return updatedCard;
+        return updatedPayment;
     }
 
-    public Mono<Void> publishBookingAcceptedEventToKafka(Long bookingId, CardDtoTransaction cardTransaction) {
+    public Mono<Void> publishBookingAcceptedEventToKafka(Long bookingId, PaymentDtoTransaction cardTransaction) {
         return reactiveKafka.send(topic, bookingId, cardTransaction)
                 .doOnNext(voidSenderResult -> log.info("Enviando ao Kafka: {}", voidSenderResult))
                 .doOnNext(result -> {

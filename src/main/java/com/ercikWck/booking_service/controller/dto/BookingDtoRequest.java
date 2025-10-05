@@ -8,11 +8,11 @@ import jakarta.validation.constraints.Min;
 
 public record BookingDtoRequest(
 
-        @Schema(description = "Código do voo", example = "FL1234", required = true)
+        @Schema(description = "Código do voo", example = "FL1234", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotBlank(message = "O código do voo é obrigatório")
         String flightNumber,
 
-        @Schema(description = "Quantidade de passagens solicitadas", example = "2", minimum = "1", required = true)
+        @Schema(description = "Quantidade de passagens solicitadas", example = "2", minimum = "1", requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull(message = "A quantidade de passagens é obrigatória")
         @Min(value = 1, message = "A quantidade mínima é 1")
         Integer quantity

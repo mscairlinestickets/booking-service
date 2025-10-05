@@ -5,10 +5,7 @@ import com.ercikWck.booking_service.TestContainerKafkaConfig;
 import com.ercikWck.booking_service.TestContainersPostgresConfiguration;
 import com.ercikWck.booking_service.WireMockContainerConfig;
 import com.ercikWck.booking_service.controller.dto.BookingRequestPayload;
-import com.ercikWck.booking_service.domain.Booking;
-import com.ercikWck.booking_service.domain.BookingService;
-import com.ercikWck.booking_service.domain.BookingStatus;
-import com.ercikWck.booking_service.domain.CardDtoTransaction;
+import com.ercikWck.booking_service.domain.*;
 import com.ercikWck.booking_service.repository.BookingRepository;
 import com.ercikWck.booking_service.ticket.TicketClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,8 +63,8 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
         @DisplayName("Deve criar reserva e chamar API externa com sucesso")
         void submitOrder() throws Exception {
 
-            var card = buildCard();
-            var request = new BookingRequestPayload("TK1933", 3, card);
+            var paymentDtoTransaction = buildpaymentDtoTransaction();
+            var request = new BookingRequestPayload("TK1933", 3, PaymentType.CREDITO, paymentDtoTransaction);
 
             var result = webTestClient.post()
                     .uri("/bookings")
@@ -77,12 +74,13 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
                     .expectBody(Booking.class).value(actual -> {
                         assertThat(actual).isNotNull();
                         assertThat(actual.status()).isEqualTo(BookingStatus.PENDING);
-                    });
+                    })
+                    .consumeWith(System.out::println);
 
             WireMock.verify(WireMock.postRequestedFor(WireMock.urlEqualTo("/api/flights/orderBooking"))
                     .withRequestBody(matchingJsonPath("$.flightNumber", equalTo("TK1933")))
-                    .withRequestBody(matchingJsonPath("$.quantity", equalTo("3"))));
-
+                    .withRequestBody(matchingJsonPath("$.quantity", equalTo("3")))
+                    .withRequestBody(matchingJsonPath("$.paymentTransaction.cardholderName", equalTo("João da Silva"))));
         }
 
         private static void setupArrangePostWireMock() {
@@ -106,7 +104,6 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
                                     """)));
         }
 
-
     }
 
     @Nested
@@ -128,9 +125,8 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
             String flightNumber = "TK9999";
             int quantity = 3;
 
-            CardDtoTransaction card = buildCard();
-            BookingRequestPayload payload = new BookingRequestPayload(flightNumber, quantity, null);
-
+            PaymentDtoTransaction paymentDtoTransaction = buildpaymentDtoTransaction();
+            BookingRequestPayload payload = new BookingRequestPayload(flightNumber, quantity, PaymentType.BOLETO, paymentDtoTransaction);
             // Simula ausência de voo (não encontrado)
             given(ticketClient.getBookingFlight(payload))
                     .willReturn(Mono.empty());
@@ -138,7 +134,7 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
             webTestClient.post()
                     .uri("/bookings")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(new BookingRequestPayload(flightNumber, quantity, card))
+                    .bodyValue(new BookingRequestPayload(flightNumber, quantity, PaymentType.PIX, paymentDtoTransaction))
                     .exchange()
                     .expectStatus().isCreated()
                     .expectBody()
@@ -149,11 +145,12 @@ public class BookingControllerIntegrationTest extends WireMockContainerConfig {
 
     }
 
-    private CardDtoTransaction buildCard() {
-        return CardDtoTransaction.builder()
-                .cardholderName("Test")
+    private PaymentDtoTransaction buildpaymentDtoTransaction() {
+        return PaymentDtoTransaction.builder()
+                .name("Test")
+                .cardholderName("João da Silva")
                 .amount(BigDecimal.valueOf(99.90))
-                .type("credit")
+                .type("CREDITO")
                 .cardNumber("1234567812345678")
                 .expiryDate("122030")
                 .cvv("123")

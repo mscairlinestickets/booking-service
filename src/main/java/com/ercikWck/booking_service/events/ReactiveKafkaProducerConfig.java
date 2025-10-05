@@ -1,7 +1,7 @@
 package com.ercikWck.booking_service.events;
 
 
-import com.ercikWck.booking_service.domain.CardDtoTransaction;
+import com.ercikWck.booking_service.domain.PaymentDtoTransaction;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +15,9 @@ public class ReactiveKafkaProducerConfig {
 
 
     @Bean
-    public ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafkaProducerTemplate(final KafkaProperties properties){
+    public ReactiveKafkaProducerTemplate<Long, PaymentDtoTransaction> reactiveKafkaProducerTemplate(final KafkaProperties properties){
         Map<String, Object> props = properties.buildProducerProperties();
-        return new ReactiveKafkaProducerTemplate<Long, CardDtoTransaction>(SenderOptions.create(props));
+        return new ReactiveKafkaProducerTemplate<Long, PaymentDtoTransaction>(SenderOptions.create(props));
     }
 
 
