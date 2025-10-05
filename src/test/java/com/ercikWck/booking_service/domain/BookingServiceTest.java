@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 public class BookingServiceTest {
 
     @Mock
-   private ReactiveKafkaProducerTemplate<Long, CardDtoTransaction> reactiveKafka;
+    private ReactiveKafkaProducerTemplate<Long, PaymentDtoTransaction> reactiveKafka;
 
     @Mock
     private TicketClient ticketClient;
@@ -52,7 +52,7 @@ public class BookingServiceTest {
         booking.toBuilder().status(BookingStatus.PENDING).build();
 
         //act
-        var bookingPending = bookingService.buildPendingBooking(booking, quantity);
+        var bookingPending = bookingService.buildPendingBooking(booking, PaymentType.BOLETO, quantity);
 
         //assert
         assertThat(bookingPending).isNotNull();
@@ -67,7 +67,7 @@ public class BookingServiceTest {
         Booking booking = createBookingTest();
 
         //act
-        var bookingRejected = bookingService.buildRejectBookingOrder(flightNumber, quantity);
+        var bookingRejected = bookingService.buildRejectBookingOrder(flightNumber, PaymentType.BOLETO, quantity);
 
         //assert
         assertEquals(BookingStatus.REJECTED, bookingRejected.status());
@@ -81,7 +81,7 @@ public class BookingServiceTest {
         String flightNumber = "FL1234";
         Booking booking = createBookingTest();
         //act
-        var bookingRejected = bookingService.buildRejectBookingOrder(flightNumber, quantity);
+        var bookingRejected = bookingService.buildRejectBookingOrder(flightNumber,PaymentType.BOLETO, quantity);
         bookingRejected.toBuilder().status(BookingStatus.REJECTED).build();
 
         //asser
@@ -124,7 +124,7 @@ public class BookingServiceTest {
         ReflectionTestUtils.setField(bookingService, "topic", "test-topic");
 
         var bookingCreate = createBookingTest();
-        var booking = Booking.createBooking(bookingCreate, 1, BookingStatus.PENDING)
+        var booking = Booking.createBooking(bookingCreate, 1,PaymentType.PIX, BookingStatus.PENDING)
                 .toBuilder()
                 .bookingId(1L)
                 .build();
@@ -135,7 +135,7 @@ public class BookingServiceTest {
         when(bookingRepository.save(any()))
                 .thenReturn(Mono.just(booking));
 
-        var card = CardDtoTransaction.builder()
+        var paymentDtoTransaction = PaymentDtoTransaction.builder()
                 .cardholderName("Test")
                 .amount(BigDecimal.valueOf(99.90))
                 .type("credit")
@@ -151,24 +151,24 @@ public class BookingServiceTest {
         when(recordMetadata.offset()).thenReturn(42L);
         when(senderResult.recordMetadata()).thenReturn(recordMetadata);
 
-        when(reactiveKafka.send(eq("test-topic"), eq(1L), any(CardDtoTransaction.class)))
+        when(reactiveKafka.send(eq("test-topic"), eq(1L), any(PaymentDtoTransaction.class)))
                 .thenReturn(Mono.just(senderResult));
 
-        BookingRequestPayload payload = new BookingRequestPayload("AA123", 1,null);
+        BookingRequestPayload payload = new BookingRequestPayload("AA123", 1, null, paymentDtoTransaction);
         // ACT
-        var resultado = bookingService.submitOrder(payload,card).block();
+        var resultado = bookingService.submitOrder(payload, paymentDtoTransaction).block();
 
         // ASSERT
         assertNotNull(resultado);
         assertEquals("FL1234", resultado.flightNumber());
 
         verify(reactiveKafka, times(1))
-                .send(eq("test-topic"), eq(1L), any(CardDtoTransaction.class));
+                .send(eq("test-topic"), eq(1L), any(PaymentDtoTransaction.class));
     }
 
 
-    private static CardDtoTransaction createCard() {
-        return CardDtoTransaction.builder()
+    private static PaymentDtoTransaction createCard() {
+        return PaymentDtoTransaction.builder()
                 .cardholderName("João Silva")
                 .amount(new BigDecimal("150.00"))
                 .type("credito")

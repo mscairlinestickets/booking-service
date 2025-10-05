@@ -60,7 +60,7 @@ public class BookingController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<Booking> createBooking(@RequestBody @Valid BookingRequestPayload payload) {
-        return bookingService.submitOrder(payload, payload.card());
+        return bookingService.submitOrder(payload, payload.paymentTransaction());
     }
 
 }
