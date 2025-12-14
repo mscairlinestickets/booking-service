@@ -16,7 +16,7 @@ spec:
         app: booking-service
     spec:
       containers:
-        - name: booking-service-container
+        - name: booking-service
           image: booking-service
           imagePullPolicy: IfNotPresent
           ports:
