@@ -7,3 +7,7 @@ spring:
     password: password
   flyway:
     url: jdbc:postgresql://airline-postgres/airlinedb_booking
+  security:
+    oauth2:
+      resourceserver:
+        jwk-set-uri: http://auth-service:9000/api/auth/.well-known/jwks.json
