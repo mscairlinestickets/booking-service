@@ -10,4 +10,5 @@ spring:
   security:
     oauth2:
       resourceserver:
-        jwk-set-uri: http://auth-service:9000/api/auth/.well-known/jwks.json
+        jwt:
+          jwk-set-uri: http://auth-service:9005/api/auth/.well-known/jwks.json
